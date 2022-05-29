@@ -7,4 +7,4 @@ RUN npm install
 COPY . .
 CMD ["npm", "start"]
 
-# © Alpha-X-MD-Bot 2022
+# mmvmvmxhvm-bmbubblbti-dbevbibce-
