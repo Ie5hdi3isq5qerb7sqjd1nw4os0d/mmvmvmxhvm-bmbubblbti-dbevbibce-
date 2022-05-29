@@ -1,0 +1,14 @@
+version: "18.1"
+services:
+  worker:
+    build: .
+    environment:
+    # Dont use ('') or ("") >
+
+        SESSION: $SESSION
+        DEBUG: $DEBUG
+        HANDLERS: $HANDLERS
+        LANGUAGE: $LANGUAGE
+        WORK_TYPE: $WORK_TYPE
+        FILES_PATH: $FILES_PATH
+        AUTOBIO: $AUTOBIO

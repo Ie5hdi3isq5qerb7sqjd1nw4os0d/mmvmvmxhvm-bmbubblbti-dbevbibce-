@@ -1,0 +1,542 @@
+const AlphaX = require('../events');
+const Configs = require('../config');
+const got = require('got');
+const { MessageType } = require('@adiwajshing/baileys');
+const { JsonDB } = require('node-json-db');
+const { Config } = require('node-json-db/dist/lib/JsonDBConfig');
+const AlphaXdb = new JsonDB(new Config('DATABASE/AlphaXDB', true, false, '/'));
+const ConfigDB = new JsonDB(new Config('DATABASE/ConfigDB', true, false, '/'));
+const GreetingDB = new JsonDB(new Config('DATABASE/GreetingDB', true, false, '/'));
+const PluginDB = new JsonDB(new Config('DATABASE/PluginDB', true, false, '/'));
+const NoteDB = new JsonDB(new Config('DATABASE/NoteDB', true, false, '/'));
+const FilterDB = new JsonDB(new Config('DATABASE/FilterDB', true, false, '/'));
+const Language = require('../language');
+const Lang = Language.getString('heroku');
+const Langr = Language.getString('lydia');
+
+Lang.SETDB_DESC = "";
+Lang.GETDB_DESC = "";
+Lang.RESETDB = "";
+
+
+AlphaX.addCommand({ pattern: 'setdb ?(.*)', fromMe: true, desc: Lang.SETDB_DESC }, (async (message, match) => {
+    const ppurl = await message.client.getProfilePicture(message.client.user.jid);
+    let PIC
+    try { PIC = await axios.get(`${Configs.A_PIC}`, { responseType: 'arraybuffer' }) } catch { PIC = await axios.get(ppurl, { responseType: 'arraybuffer' }) }
+
+    if (match[1] === '') return await message.client.sendMessage(message.jid, Lang.KEY_VAL_MISSING, MessageType.text, { });
+    if (match[1].match(/BLOCK_CHAT:94772978164/i)) {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            return await message.client.sendMessage(
+                message.jid,
+                '*Kurucuyu Block Chat\'e Alamam!*',
+                MessageType.text
+            );
+        }
+        else {
+            return await message.client.sendMessage(
+                message.jid,
+                '❌ *I can\'t add Bot Developers to Block Chat* ❌',
+                MessageType.text, { quoted: message.data })        }
+    }
+    if (match[1].match(/BLOCK_CHAT:94763983965/i)) {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            return await message.client.sendMessage(
+                message.jid,
+                '*Kurucuyu Block Chat\'e Alamam!*',
+                MessageType.text
+            );
+        }
+        else {
+            return await message.client.sendMessage(
+                message.jid,
+                '❌ *I Can\'t add Bot Developers to Block Chat* ❌',
+                MessageType.text, { quoted: message.data })        }
+    }
+
+    //====================================================================================================================================
+    if (message.reply_message) {
+
+        if (match[1] == 'welcome') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await GreetingDB.push("/WELCOME", { [message.jid]: message.reply_message.text.replace(/#/g, '\n') });
+            await message.client.sendMessage(message.jid, Lang.GR_DEL, MessageType.text, { quoted: message.data });
+        }
+        else if (match[1] == 'goodbye') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await GreetingDB.push("/GOODBYE", { [message.jid]: message.reply_message.text.replace(/#/g, '\n') });
+            await message.client.sendMessage(message.jid, Lang.GR_DEL, MessageType.text, { quoted: message.data });
+        }
+        else if (match[1] == 'ban') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/BANMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'mute') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/MUTEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'unmute') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/UNMUTEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'add') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/ADDMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'dsong') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/D_SONG', message.reply_message.text);
+        }
+        else if (match[1] == 'badkick msg') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/BKICK_MSG', message.reply_message.text);
+        }
+        else if (match[1] == 'usong') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/U_SONG', message.reply_message.text);
+        }
+        else if (match[1] == 'dvideo') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/D_VIDEO', message.reply_message.text);
+        }
+        else if (match[1] == 'uvideo') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/U_VIDEO', message.reply_message.text);
+        }
+        else if (match[1] == 'bot name') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/BOTNAME', message.reply_message.text);
+        }
+        else if (match[1] == 'dsong pic') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/D_SONG_PIC', message.reply_message.text);
+        }
+        else if (match[1] == 'dvideo pic') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/D_VIDEO_PIC', message.reply_message.text);
+        }
+        else if (match[1] == 'wlcm gif') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/WLCM_GIF', message.reply_message.text);
+        }
+        else if (match[1] == 'gbye gif') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/GBYE_GIF', message.reply_message.text);
+        }
+        else if (match[1] == 'alink ban msg') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/ALB_MSG', message.reply_message.text);
+        }
+        else if (match[1] == 'clist key') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/CL_KEY', message.reply_message.text);
+        }
+        else if (match[1] == 'amsg key') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/AM_KEY', message.reply_message.text);
+        }
+        else if (match[1] == 'clist pic') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/CL_PIC', message.reply_message.text);
+        }
+        else if (match[1] == 'alive pic') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/A_PIC', message.reply_message.text);
+        }
+        else if (match[1] == 'user name') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/U_NAME', message.reply_message.text);
+        }
+        else if (match[1] == 'cemoji') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/C_EMOJI', message.reply_message.text);
+        }
+        else if (match[1] == 'demoji') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/D_EMOJI', message.reply_message.text);
+        }
+        else if (match[1] == 'wemoji') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/W_EMOJI', message.reply_message.text);
+        }
+        else if (match[1] == 'kickme') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/KICKMEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'afk') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/AFKMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'alive') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/ALIVEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'demote') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/DEMOTEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'promote') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/PROMOTEMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'block') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('BLOCKMSG', message.reply_message.text);
+        }
+        else if (match[1] == 'unblock') {
+            await message.client.sendMessage(message.jid, Lang.SUCC, MessageType.text, { quoted: message.data });
+            await ConfigDB.push('/UNBLOCKMSG', message.reply_message.text);
+        }
+    }
+
+    // ================================================== CONFIG SCANNER ==================================================
+
+    if (match[1] == 'SEND_READ: true' || match[1] == 'SEND_READ: True' || match[1] == 'SEND_READ: TRUE' || match[1] == 'SEND_READ:True' || match[1] == 'SEND_READ:TRUE' || match[1] == 'SEND_READ:ture' || match[1] == 'SEND_READ: ture' || match[1] == 'SEND_READ:ttue' || match[1] == 'SEND_READ:trie' || match[1] == 'SEND_READ: trie' || match[1] == 'SEND_READ:Trie' || match[1] == 'SEND_READ: Trie') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *SEND_READ* _anahtarını_ *true* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return ConfigDB.push('/SEND_READ', true);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *SEND_READ* _var switch_ *true.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/SEND_READ', true);
+        }
+    }
+    if (match[1] == 'SEND_READ: false' || match[1] == 'SEND_READ: False' || match[1] == 'SEND_READ: FALSE' || match[1] == 'SEND_READ:False' || match[1] == 'SEND_READ:FALSE' || match[1] == 'SEND_READ:fakse' || match[1] == 'SEND_READ: fakse' || match[1] == 'SEND_READ:falde' || match[1] == 'SEND_READ: falde' || match[1] == 'SEND_READ:flase' || match[1] == 'SEND_READ:Flase' || match[1] == 'SEND_READ: flase') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *SEND_READ* _anahtarını_ *false* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/SEND_READ', false);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *SEND_READ* _var switch_ *false.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/SEND_READ', false);
+        }
+    }
+    if (match[1] == 'DEBUG: false' || match[1] == 'DEBUG: False' || match[1] == 'DEBUG: FALSE' || match[1] == 'DEBUG:False' || match[1] == 'DEBUG:FALSE' || match[1] == 'DEBUG:fakse' || match[1] == 'DEBUG: fakse' || match[1] == 'DEBUG:falde' || match[1] == 'DEBUG: falde' || match[1] == 'DEBUG:flase' || match[1] == 'DEBUG:Flase' || match[1] == 'DEBUG: flase') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *DEBUG* _anahtarını_ *false* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/DEBUG', false);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *DEBUG* _var switch_ *false.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/DEBUG', false);
+        }
+    }
+    if (match[1] == 'BLOCK_CHAT: false' || match[1] == 'BLOCK_CHAT: False' || match[1] == 'BLOCK_CHAT: FALSE' || match[1] == 'BLOCK_CHAT:False' || match[1] == 'BLOCK_CHAT:FALSE' || match[1] == 'BLOCK_CHAT:fakse' || match[1] == 'BLOCK_CHAT: fakse' || match[1] == 'BLOCK_CHAT:falde' || match[1] == 'BLOCK_CHAT: falde' || match[1] == 'BLOCK_CHAT:flase' || match[1] == 'BLOCK_CHAT:Flase' || match[1] == 'BLOCK_CHAT: flase') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *BLOCK_CHAT* _anahtarını_ *false* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/BLOCKCHAT', false);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *BLOCK_CHAT* _var switch_ *false.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/BLOCKCHAT', false);
+        }
+    }
+    if (match[1] == 'DEBUG: true' || match[1] == 'DEBUG: True' || match[1] == 'DEBUG: TRUE' || match[1] == 'DEBUG:True' || match[1] == 'DEBUG:TRUE' || match[1] == 'DEBUG:ture' || match[1] == 'DEBUG: ture' || match[1] == 'DEBUG:ttue' || match[1] == 'DEBUG:trie' || match[1] == 'DEBUG: trie' || match[1] == 'DEBUG:Trie' || match[1] == 'DEBUG: Trie') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *DEBUG* _anahtarını_ *true* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return ConfigDB.push('/DEBUG', true);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *DEBUG* _var switch_ *true.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/DEBUG', true);
+        }
+    }
+    if (match[1] == 'NO_ONLINE: false' || match[1] == 'NO_ONLINE: False' || match[1] == 'NO_ONLINE: FALSE' || match[1] == 'NO_ONLINE:False' || match[1] == 'NO_ONLINE:FALSE' || match[1] == 'NO_ONLINE:fakse' || match[1] == 'NO_ONLINE: fakse' || match[1] == 'NO_ONLINE:falde' || match[1] == 'NO_ONLINE: falde' || match[1] == 'NO_ONLINE:flase' || match[1] == 'NO_ONLINE:Flase' || match[1] == 'NO_ONLINE: flase') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *NO_ONLINE* _anahtarını_ *false* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/NO_ONLINE', false);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *NO_ONLINE* _var switch_ *false.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/NO_ONLINE', false);
+        }
+    }
+    if (match[1] == 'NO_ONLINE: true' || match[1] == 'NO_ONLINE: True' || match[1] == 'NO_ONLINE: TRUE' || match[1] == 'NO_ONLINE:True' || match[1] == 'NO_ONLINE:TRUE' || match[1] == 'NO_ONLINE:ture' || match[1] == 'NO_ONLINE: ture' || match[1] == 'NO_ONLINE:ttue' || match[1] == 'NO_ONLINE:trie' || match[1] == 'NO_ONLINE: trie' || match[1] == 'NO_ONLINE:Trie' || match[1] == 'NO_ONLINE: Trie') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre_ *NO_ONLINE* _anahtarını_ *true* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/NO_ONLINE', true);
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to make the_ *NO_ONLINE* _var switch_ *true.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/NO_ONLINE', true);
+        }
+    }
+    if (match[1] == 'LANGUAGE:tr' || match[1] == 'LANGUAGE: tr' || match[1] == 'LANGUAGE: Tr' || match[1] == 'LANGUAGE:Tr' || match[1] == 'LANGUAGE: TR' || match[1] == 'LANGUAGE:tR' || match[1] == 'LANGUAGE: tR' || match[1] == 'LANGUAGE:T R' || match[1] == 'LANGUAGE:Turkce' || match[1] == 'LANGUAGE:turkce' || match[1] == 'LANGUAGE:türkce' || match[1] == 'LANGUAGE:Türkce') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Türkçe* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'TR');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Turkish*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'TR');
+        }
+    }
+    if (match[1] == 'LANGUAGE:En' || match[1] == 'LANGUAGE: En' || match[1] == 'LANGUAGE: en' || match[1] == 'LANGUAGE:EN' || match[1] == 'LANGUAGE: EN' || match[1] == 'LANGUAGE:eN' || match[1] == 'LANGUAGE: eN' || match[1] == 'LANGUAGE:E N' || match[1] == 'LANGUAGE: English' || match[1] == 'LANGUAGE:English' || match[1] == 'LANGUAGE:english' || match[1] == 'LANGUAGE: english') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Ingilize* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'EN');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *English.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'EN');
+        }
+    }
+    if (match[1] == 'LANGUAGE: az' || match[1] == 'LANGUAGE: Az' || match[1] == 'LANGUAGE:Az' || match[1] == 'LANGUAGE:AZ' || match[1] == 'LANGUAGE: AZ' || match[1] == 'LANGUAGE:aZ' || match[1] == 'LANGUAGE: aZ' || match[1] == 'LANGUAGE:A Z') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Azerice* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'AZ');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Azerbaijani.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'AZ');
+        }
+    }
+    if (match[1] == 'LANGUAGE: ml' || match[1] == 'LANGUAGE: Ml' || match[1] == 'LANGUAGE:Ml' || match[1] == 'LANGUAGE:ML' || match[1] == 'LANGUAGE: ML' || match[1] == 'LANGUAGE:mL' || match[1] == 'LANGUAGE: mL' || match[1] == 'LANGUAGE:M L') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Malayam* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ML');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Malayalam.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ML');
+        }
+    }
+    if (match[1] == 'LANGUAGE: HI' || match[1] == 'LANGUAGE: Hı' || match[1] == 'LANGUAGE:Hı' || match[1] == 'LANGUAGE:hı' || match[1] == 'LANGUAGE: hı' || match[1] == 'LANGUAGE:H I') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Hintçe* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'HI');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Hindi.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'HI');
+        }
+    }
+    if (match[1] == 'LANGUAGE: es' || match[1] == 'LANGUAGE: Es' || match[1] == 'LANGUAGE:Es' || match[1] == 'LANGUAGE: ES' || match[1] == 'LANGUAGE:eS' || match[1] == 'LANGUAGE: eS' || match[1] == 'LANGUAGE:E S') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Ispanyolca* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ES');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Spanish.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ES');
+        }
+    }
+    if (match[1] == 'LANGUAGE: id' || match[1] == 'LANGUAGE: Id' || match[1] == 'LANGUAGE: Id' || match[1] == 'LANGUAGE:ıd' || match[1] == 'LANGUAGE: ıd' || match[1] == 'LANGUAGE:id' || match[1] == 'LANGUAGE: ID' || match[1] == 'LANGUAGE: ID' || match[1] == 'LANGUAGE:ID' || match[1] == 'LANGUAGE:iD' || match[1] == 'LANGUAGE: iD' || match[1] == 'LANGUAGE:I D') {
+
+        if (Configs.LANG == 'TR' || Configs.LANG == 'AZ') {
+            await message.client.sendMessage(
+                message.jid,
+                '_Görünüşe göre bot dilini_ *Endonezce* _yapmaya çalışıyorsun._\n_Merak etme, senin için doğrusunu ayarlayabilirim._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ID');
+        }
+        else {
+            await message.client.sendMessage(
+                message.jid,
+                '_It looks like you are trying to change bot language to_ *Indonesian.*\n_Dont worry, I will set it for you._',
+                MessageType.text
+            );
+            return await ConfigDB.push('/LANG', 'ID');
+        }
+    }
+    // ================================================== END CONFIG SCANNER ==================================================
+
+    if ((varKey = match[1].split(':')[0]) && (varValue = match[1].split(':')[1])) {
+        try {
+            await ConfigDB.getData('/' + varKey)
+        } catch {
+            return await message.client.sendMessage(message.jid, `No keys found like "${varKey}" `, MessageType.text);
+        }
+        await ConfigDB.push('/' + varKey, varValue);
+        await message.client.sendMessage(message.jid, Lang.SET_SUCCESS.format(varKey, varValue), MessageType.text, { contextInfo: { forwardingScore: 49, isForwarded: false }, quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(message.jid ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": '✅ ' + match[1], "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486", "jpegThumbnail": Buffer.from(PIC.data) } } } });
+    } else {
+        await message.client.sendMessage(message.jid, Lang.INVALID, MessageType.text, { contextInfo: { forwardingScore: 49, isForwarded: false }, quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(message.jid ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": "•• 🙄 Invalid! ••‎", "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486", "jpegThumbnail": Buffer.from(PIC.data) } } } });
+
+    }
+}));
+
+
+AlphaX.addCommand({ pattern: 'getdb ?(.*)', fromMe: true, desc: Lang.GETDB_DESC }, (async (message, match) => {
+    const ppurl = await message.client.getProfilePicture(message.client.user.jid);
+    let PIC
+    try { PIC = await axios.get(`${Config.A_PIC}`, { responseType: 'arraybuffer' }) } catch { PIC = await axios.get(ppurl, { responseType: 'arraybuffer' }) }
+    var data = ''
+    if (match[1] === '') {
+        return await message.client.sendMessage(message.jid, Lang.KEY_VAL_MISSING, MessageType.text, { contextInfo: { forwardingScore: 49, isForwarded: false }, quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(message.jid ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": "‎♦ Need Key!", "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486", "jpegThumbnail": Buffer.from(PIC.data) } } } });
+    } else if (match[1] == 'all') {
+        data = await ConfigDB.getData('/');
+        var keys = Object.keys(data);
+        var msg = '*All Configs are here*'
+        keys.map((key) => {
+            msg += '\n\n' + key + ': ' + ConfigDB.getData('/' + key)
+        });
+        await message.client.sendMessage(message.jid, msg, MessageType.text, { quoted: message.data });
+    } else if (match[1] == 'AlphaXDB') {
+        data = await AlphaXdb.getData('/');
+        await message.client.sendMessage(message.jid, data, MessageType.text, { quoted: message.data });
+    } else if (match[1] == 'plugins') {
+        data = await PluginDB.getData('/');
+        await message.client.sendMessage(message.jid, data, MessageType.text, { quoted: message.data });
+    } else if (match[1] == 'greetings') {
+        data = GreetingDB.getData('/');
+        await message.client.sendMessage(message.jid, data, MessageType.text, { quoted: message.data });
+    } else if (match[1] == 'flters') {
+        data = await FilterDB.getData('/');
+        await message.client.sendMessage(message.jid, data, MessageType.text, { quoted: message.data });
+    } else if (match[1] == 'notes') {
+        data = NoteDB.getData('/');
+        await message.client.sendMessage(message.jid, data, MessageType.text, { quoted: message.data });
+    } else {
+        try {
+            data = await ConfigDB.getData('/' + match[1])
+        } catch {
+            return await message.client.sendMessage(message.jid, Lang.NOT_FOUND, MessageType.text, { contextInfo: { forwardingScore: 49, isForwarded: false }, quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(message.jid ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": "♦ Invalid Key!‎", "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486", "jpegThumbnail": Buffer.from(PIC.data) } } } });
+        }
+        await message.client.sendMessage(message.jid, `${match[1]}: ${data}`, MessageType.text, { quoted: message.data });
+    }
+}));
+
+AlphaX.addCommand({ pattern: 'resetdb ?(.*)', fromMe: true, desc: Lang.GETVAR_DESC }, (async (message, match) => {
+
+    await message.client.sendMessage(message.jid, 'Resetting DataBase....', MessageType.text, { quoted: message.data });
+
+    ConfigDB.push('/', { "SESSION": ConfigDB.getData('/SESSION'), "WORKTYPE": "private", "LANG": "EN", "HANDLERS": "^[.!;/#]", "U_NAME": "Enter Name 🥲", "CL_KEY": "alphaWA", "AM_KEY": "alive", "SUDO": false, "BLOCKCHAT": false, "SEND_READ": false, "NO_ONLINE": true, "NOLOG": false, "BGM": false, "AI_LILY": false, "ANTILINK": false, "BLOCKLINK": false, "AUTOBIO": false, "BKICK": false, "CLIST_MSG": "*You need to set COMMAND_CLIST_MSG!* 🔧", "CMENU_MSG": "Read The Guide. ℹ️ \n\n```Alpha-X Bot - Alpha Userbot is Open Source software open to development. \nThe user is responsible for all consequences that may arise from incorrect or misuse. \nSince it is an open source project, anyone can copy the software, add and remove,\nand use it in a way that they customize. In addition, plug-in support enables users to \ninstall their own plugins to the original software and use them as they wish.\nUsing the bot out of purpose will explicitly ban you.\nUsage is entirely the user\"s responsibility, Alpha Userbot is an \ninfrastructure only. Just as the operating system is not responsible \nfor the work done with the programs that are installed later, Alpha-X \nis not responsible for the usage purpose and method of the users.\nMarketing Alpha-X for money, making it available or having any material value\nıt is strictly forbidden to offer it for sale with anything. All legal investigations that may arise\nthe user is responsible.```", "A_PIC": "Sending pp", "CMENU": "෴ ɢᴜɪᴅᴇ 👀", "ALIVEMSG": "default", "AFKMSG": "default", "KICKMEMSG": "default", "ADDMSG": "default", "BANMSG": "default", "PROMOTEMSG": "default", "DEMOTEMSG": "default", "MUTEMSG": "default", "UNMUTEMSG": "default", "BLOCKMSG": "default", "UNBLOCKMSG": "default", "BKICK_MSG": "default", "ALB_MSG": "default", "CAPTION": "༺🚀 Mᴀᴅᴇ Bʏ Ａｌｐｈａ-Ｘ 🔮࿐", "BOTNAME": "≪━─━─━─━─🛡️─━─━─━─━≫\n          *🛸 Ａｌｐｈａ-Ｘ 🛸*\n        ╚╩══• •✠•❀•✠ • •══╩╝", "BIONAME": "━──🔥──╮• Ａｌｐｈａ-Ｘ •╭──🔥──━", "D_SONG": "*🄳ᴏᴡɴʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ sᴏɴɢ...* 📥", "U_SONG": "*🅄ᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ sᴏɴɢ...* 📤", "D_VIDEO": "*🄳ᴏᴡɴʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ᴠɪᴅᴇᴏ...* 📥", "U_VIDEO": "*🅄ᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ᴠɪᴅᴇᴏ...* 📤", "C_EMOJI": "🪀", "D_EMOJI": "🎗️", "W_EMOJI": "⚠️️", "CL_PIC": "https://telegra.ph/file/dc8e4edc7230cedbdec2c.jpg", "D_SONG_PIC": "https://thumbs.dreamstime.com/b/stereo-headphones-glitch-effect-music-electronic-devise-vector-icon-night-party-background-164226152.jpg", "D_VIDEO_PIC": "https://moddingunited.xyz/wp-content/uploads/2021/06/PicsArt_06-18-08.57.23-1024x633.jpg", "WLCM_GIF": "https://telegra.ph/file/338cb7f0b2b01e463efcd.mp4", "GBYE_GIF": "https://telegra.ph/file/88f85fe6850015ae49067.mp4", "XAPI": "4f534c488a21d052", "RBG_API_KEY": "8mn8zU7BedfTjsZzN64URZNy", "COFFEEHOUSE_API_KEY": false, "PROXY": false, "DEBUG": false, "HEROKU": {} });
+
+    await message.client.sendMessage(message.jid, 'Resetting Succesful!', MessageType.text, { quoted: message.data });
+}));
+
+AlphaX.addCommand({ pattern: 'addsudo ?(.*)', fromMe: WType, desc: WAME_DESC }, (async (message, match) => {
+    if (message.reply_message !== false) {
+        await message.client.sendMessage(message.jid, WAME.format(message.reply_message.jid.split('@')[0], message.reply_message.jid.replace('@s.whatsapp.net', ' ')), MessageType.text, {
+            quotedMessage: message.reply_message.data, contextInfo: { mentionedJid: [message.reply_message.jid.replace('c.us', 's.whatsapp.net')] }
+        });
+    } else if (message.mention !== false) {
+        message.mention.map(async user => {
+            await message.client.sendMessage(message.jid, WAME.format(user.split('@')[0], user.replace('@s.whatsapp.net', ' ')), MessageType.text, {
+                contextInfo: { mentionedJid: [user.replace('c.us', 's.whatsapp.net')] }
+            });
+        });
+    } else {
+        await message.client.sendMessage(message.jid, NEED_UWONG, MessageType.text);
+    }
+}));
