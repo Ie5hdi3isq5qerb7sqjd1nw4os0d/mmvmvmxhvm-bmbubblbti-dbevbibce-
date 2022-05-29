@@ -1,10 +1,6 @@
 {
     "AlphaX": true,
     "DB": "greetings",
-    "WELCOME": {
-        "120363023256845651@g.us": "{pp} *🫡 Hᴇʟʟᴏ {user}*\n\n {gdesc} \n\n _© {gowner}_"
-    },
-    "GOODBYE": {
-        "120363023256845651@g.us": "{pp} *Bye Bye {user} 🌚👍🏻*"
-    }
+    "WELCOME": {},
+    "GOODBYE": {}
 }
